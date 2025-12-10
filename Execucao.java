@@ -5,32 +5,55 @@ public class Execucao {
 
     public String processarArquivo(List<String> linhas) {
 
-        int p = Integer.parseInt(linhas.get(0));  // páginas do espaço virtual
-        int m = Integer.parseInt(linhas.get(1));  // molduras
-        int c = Integer.parseInt(linhas.get(2));  // ciclo bit R reset
+    List<String> filtrado = new ArrayList<>();
 
-        List<Algoritmos.Acesso> acessos = new ArrayList<>();
+    for (String linha : linhas) {
 
-        for (int i = 3; i < linhas.size(); i++) {
-            String[] partes = linhas.get(i).split(" ");
+        if (linha == null) continue;
 
-            int pagina = Integer.parseInt(partes[0]);
-            int tempo  = Integer.parseInt(partes[1]);
-            char tipo  = partes[2].charAt(0);
+        // Remove BOM
+        linha = linha.replace("\uFEFF", "");
 
-            acessos.add(new Algoritmos.Acesso(pagina, tempo, tipo));
+        linha = linha.trim();
+
+        if (!linha.isEmpty()) {
+            filtrado.add(linha);
         }
-
-        // ----- CHAMADA DOS ALGORITMOS -----
-        int faltasOtimo   = Algoritmos.algoritmoOtimo(acessos, m);
-        int faltasNRU     = Algoritmos.algoritmoNRU(acessos, m, c);
-        int faltasRelogio = Algoritmos.algoritmoRelogio(acessos, m);
-        int faltasWSClock = Algoritmos.algoritmoWSClock(acessos, m, c);
-
-        // ----- FORMATANDO SAÍDA -----
-        return faltasOtimo + "\n" +
-            faltasNRU + "\n" +
-            faltasRelogio + "\n" +
-            faltasWSClock;
     }
+
+    // >>> PERMITE ARQUIVOS VAZIOS <<<
+    if (filtrado.size() < 3) {
+        return "0\n0\n0\n0";
+    }
+
+    int p = Integer.parseInt(filtrado.get(0));
+    int m = Integer.parseInt(filtrado.get(1));
+    int c = Integer.parseInt(filtrado.get(2));
+
+    List<Algoritmos.Acesso> acessos = new ArrayList<>();
+
+    for (int i = 3; i < filtrado.size(); i++) {
+        String[] partes = filtrado.get(i).split("\\s+");
+
+        if (partes.length < 3) continue;
+
+        int pagina = Integer.parseInt(partes[0]);
+        int tempo  = Integer.parseInt(partes[1]);
+        char tipo  = partes[2].charAt(0);
+
+        acessos.add(new Algoritmos.Acesso(pagina, tempo, tipo));
+    }
+
+    int faltasOtimo   = Algoritmos.algoritmoOtimo(acessos, m);
+    int faltasNRU     = Algoritmos.algoritmoNRU(acessos, m, c);
+    int faltasRelogio = Algoritmos.algoritmoRelogio(acessos, m);
+    int faltasWSClock = Algoritmos.algoritmoWSClock(acessos, m, c);
+
+    return faltasOtimo + "\n" +
+        faltasNRU + "\n" +
+        faltasRelogio + "\n" +
+        faltasWSClock;
+}
+
+
 }
